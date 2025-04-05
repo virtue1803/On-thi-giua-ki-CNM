@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaigonCar - Quản lý dòng xe</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    img { width: 100px; height: auto; }
+    .form-container { margin-bottom: 20px; }
+    .form-container input { margin: 5px 0; padding: 5px; }
+    .form-container button { padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <h1>Quản lý dòng xe - SaigonCar</h1>
+
+  <!-- Form thêm xe -->
+  <div class="form-container">
+    <h3>Thêm dòng xe mới</h3>
+    <form id="addCarForm" enctype="multipart/form-data">
+      <input type="text" id="carId" name="carId" placeholder="Mã xe" required><br>
+      <input type="text" id="name" name="name" placeholder="Tên dòng xe" required><br>
+      <input type="text" id="type" name="type" placeholder="Loại xe" required><br>
+      <input type="number" id="price" name="price" placeholder="Giá" required><br>
+      <input type="file" id="image" name="image" accept="image/*" required><br>
+      <button type="submit">Thêm xe</button>
+    </form>
+  </div>
+
+  <!-- Danh sách xe -->
+  <table>
+    <thead>
+      <tr>
+        <th>Mã xe</th>
+        <th>Tên dòng xe</th>
+        <th>Loại xe</th>
+        <th>Giá</th>
+        <th>Hình ảnh</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% cars.forEach(car => { %>
+        <tr>
+          <td><%= car.carId %></td>
+          <td><%= car.name %></td>
+          <td><%= car.type %></td>
+          <td><%= car.price %></td>
+          <td><img src="<%= car.image %>" alt="<%= car.name %>"></td>
+          <td>
+            <button onclick="deleteCar('<%= car.carId %>')">Xóa</button>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <script>
+    // Thêm xe
+    document.getElementById('addCarForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('carId', document.getElementById('carId').value);
+      formData.append('name', document.getElementById('name').value);
+      formData.append('type', document.getElementById('type').value);
+      formData.append('price', document.getElementById('price').value);
+      formData.append('image', document.getElementById('image').files[0]);
+
+      const response = await fetch('/api/cars', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+      if (response.ok) {
+        alert('Thêm xe thành công!');
+        window.location.reload();
+      } else {
+        alert('Lỗi: ' + result.error);
+      }
+    });
+
+    // Xóa xe
+    async function deleteCar(carId) {
+      if (confirm('Bạn có chắc muốn xóa xe này?')) {
+        const response = await fetch(`/api/cars/${carId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok) {
+          alert('Xóa xe thành công!');
+          window.location.reload();
+        } else {
+          alert('Lỗi: ' + result.error);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
