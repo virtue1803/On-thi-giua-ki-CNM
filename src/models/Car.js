@@ -1,94 +1,92 @@
-const { dynamodb, docClient } = require('../config/aws');
+const { dynamodb, docClient } = require('../config/aws'); // Nhập dynamodb và docClient từ file config AWS
 
 // Hàm kiểm tra và tạo bảng Cars
 const setupCarsTable = async () => {
-  const tableName = 'Cars';
-  const expectedSchema = {
-    KeySchema: [
-      { AttributeName: 'carId', KeyType: 'HASH' },
+  const tableName = 'Cars'; // Đặt tên bảng là 'Cars'
+  const expectedSchema = { // Cấu trúc mong muốn của bảng
+    KeySchema: [ // Định nghĩa khóa chính
+      { AttributeName: 'carId', KeyType: 'HASH' }, // 'carId' là khóa chính kiểu HASH (duy nhất)
     ],
-    AttributeDefinitions: [
-      { AttributeName: 'carId', AttributeType: 'S' },
+    AttributeDefinitions: [ // Định nghĩa thuộc tính
+      { AttributeName: 'carId', AttributeType: 'S' }, // 'carId' là kiểu chuỗi (String)
     ],
   };
 
   try {
-    // Kiểm tra bảng đã tồn tại chưa
-    const table = await dynamodb.describeTable({ TableName: tableName }).promise();
+    // Kiểm tra xem bảng đã tồn tại chưa
+    const table = await dynamodb.describeTable({ TableName: tableName }).promise(); // Lấy thông tin bảng Cars
 
-    // So sánh cấu trúc bảng hiện tại với cấu trúc mong muốn
+    // So sánh cấu trúc hiện tại với cấu trúc mong muốn
     const hasCorrectSchema =
-      JSON.stringify(table.Table.KeySchema) === JSON.stringify(expectedSchema.KeySchema) &&
-      JSON.stringify(table.Table.AttributeDefinitions) === JSON.stringify(expectedSchema.AttributeDefinitions);
+      JSON.stringify(table.Table.KeySchema) === JSON.stringify(expectedSchema.KeySchema) && // So sánh khóa
+      JSON.stringify(table.Table.AttributeDefinitions) === JSON.stringify(expectedSchema.AttributeDefinitions); // So sánh thuộc tính
 
-    if (!hasCorrectSchema) {
-      // Nếu cấu trúc không khớp, xóa bảng
-      await dynamodb.deleteTable({ TableName: tableName }).promise();
-      console.log('Existing table deleted due to schema mismatch');
-      await createCarsTable(); // Tạo lại bảng
-    } else {
-      console.log('Table already exists with correct schema:', table);
+    if (!hasCorrectSchema) { // Nếu cấu trúc không khớp
+      await dynamodb.deleteTable({ TableName: tableName }).promise(); // Xóa bảng cũ
+      console.log('Existing table deleted due to schema mismatch'); // Thông báo xóa bảng
+      await createCarsTable(); // Tạo lại bảng mới
+    } else { // Nếu cấu trúc đúng
+      console.log('Table already exists with correct schema:', table); // Thông báo bảng đã tồn tại và đúng
     }
-  } catch (error) {
-    if (error.code === 'ResourceNotFoundException') {
-      // Nếu bảng chưa tồn tại, tạo bảng mới
-      await createCarsTable();
-    } else {
-      throw error;
+  } catch (error) { // Xử lý lỗi
+    if (error.code === 'ResourceNotFoundException') { // Nếu bảng chưa tồn tại
+      await createCarsTable(); // Tạo bảng mới
+    } else { // Nếu lỗi khác
+      throw error; // Ném lỗi ra ngoài để xử lý tiếp
     }
   }
 };
 
 // Hàm tạo bảng Cars và chờ đến khi bảng sẵn sàng
 const createCarsTable = async () => {
-  const params = {
-    TableName: 'Cars',
-    KeySchema: [
-      { AttributeName: 'carId', KeyType: 'HASH' },
+  const params = { // Cấu hình để tạo bảng
+    TableName: 'Cars', // Tên bảng
+    KeySchema: [ // Định nghĩa khóa chính
+      { AttributeName: 'carId', KeyType: 'HASH' }, // 'carId' là khóa chính kiểu HASH
     ],
-    AttributeDefinitions: [
-      { AttributeName: 'carId', AttributeType: 'S' },
+    AttributeDefinitions: [ // Định nghĩa thuộc tính
+      { AttributeName: 'carId', AttributeType: 'S' }, // 'carId' là kiểu chuỗi (String)
     ],
-    ProvisionedThroughput: {
-      ReadCapacityUnits: 5,
-      WriteCapacityUnits: 5,
+    ProvisionedThroughput: { // Quy định dung lượng
+      ReadCapacityUnits: 5, // 5 đơn vị đọc mỗi giây
+      WriteCapacityUnits: 5, // 5 đơn vị ghi mỗi giây
     },
   };
 
-  await dynamodb.createTable(params).promise();
-  console.log('Creating Cars table...');
+  await dynamodb.createTable(params).promise(); // Gọi lệnh tạo bảng
+  console.log('Creating Cars table...'); // Thông báo đang tạo bảng
 
-  // Chờ bảng sẵn sàng
+  // Chờ đến khi bảng sẵn sàng để sử dụng
   await dynamodb
-    .waitFor('tableExists', { TableName: 'Cars' })
+    .waitFor('tableExists', { TableName: 'Cars' }) // Đợi bảng chuyển sang trạng thái active
     .promise();
-  console.log('Cars table created successfully and is now active');
+  console.log('Cars table created successfully and is now active'); // Thông báo bảng đã tạo xong
 };
 
 // Hàm thêm dòng xe
-const addCar = async (car) => {
-  const params = {
-    TableName: 'Cars',
-    Item: car,
+const addCar = async (car) => { // 'car' là object chứa thông tin xe (ví dụ: { carId: '1', name: 'Toyota' })
+  const params = { // Cấu hình để thêm xe
+    TableName: 'Cars', // Tên bảng
+    Item: car, // Dữ liệu xe cần thêm
   };
-  return docClient.put(params).promise();
+  return docClient.put(params).promise(); // Thêm xe vào bảng và trả về Promise
 };
 
 // Hàm lấy tất cả dòng xe
 const getAllCars = async () => {
-  const params = {
-    TableName: 'Cars',
+  const params = { // Cấu hình để lấy dữ liệu
+    TableName: 'Cars', // Tên bảng
   };
-  return docClient.scan(params).promise();
+  return docClient.scan(params).promise(); // Quét toàn bộ bảng và trả về danh sách xe
 };
 
 // Hàm xóa dòng xe theo carId
-const deleteCar = async (carId) => {
-  const params = {
-    TableName: 'Cars',
-    Key: { carId },
+const deleteCar = async (carId) => { // 'carId' là ID của xe cần xóa
+  const params = { // Cấu hình để xóa xe
+    TableName: 'Cars', // Tên bảng
+    Key: { carId }, // Khóa chính để xác định xe cần xóa
   };
-  return docClient.delete(params).promise();
+  return docClient.delete(params).promise(); // Xóa xe và trả về Promise
 };
 
-module.exports = { setupCarsTable, addCar, getAllCars, deleteCar };
+module.exports = { setupCarsTable, addCar, getAllCars, deleteCar }; // Xuất các hàm để dùng ở file khác
