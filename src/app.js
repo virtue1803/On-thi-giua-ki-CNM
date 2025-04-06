@@ -1,6 +1,6 @@
 const express = require('express'); // Nhập thư viện Express để tạo server và xử lý các yêu cầu HTTP
 const path = require('path'); // Nhập module path của Node.js để xử lý đường dẫn file
-const carRoutes = require('./routes/carRoutes'); // Nhập file router từ thư mục routes để định nghĩa các tuyến đường
+const ClockRoutes = require('./routes/ClockRoutes'); // Nhập file router từ thư mục routes để định nghĩa các tuyến đường
 
 const app = express(); // Tạo một instance của Express, đây là ứng dụng chính của bạn
 
@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true })); // Middleware để parse dữ 
 // extended: true cho phép parse các object lồng nhau trong form
 
 // Routes
-app.use('/', carRoutes); // Sử dụng router từ carRoutes cho các tuyến đường bắt đầu từ '/' (gốc)
-// Tất cả các yêu cầu sẽ được chuyển tới carRoutes để xử lý
+app.use('/', ClockRoutes); // Sử dụng router từ ClockRoutes cho các tuyến đường bắt đầu từ '/' (gốc)
+// Tất cả các yêu cầu sẽ được chuyển tới ClockRoutes để xử lý
 
 module.exports = app; // Xuất ứng dụng Express để sử dụng ở file khác (thường là file chạy server như index.js)

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SaigonCar - Quản lý dòng xe</title>
+  <title>SaigonClock - Quản lý dòng đồng hồ</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     h1 { text-align: center; }
@@ -17,43 +17,43 @@
   </style>
 </head>
 <body>
-  <h1>Quản lý dòng xe - SaigonCar</h1>
+  <h1>Quản lý dòng đồng hồ - SaigonClock</h1>
 
-  <!-- Form thêm xe -->
+  <!-- Form thêm đồng hồ -->
   <div class="form-container">
-    <h3>Thêm dòng xe mới</h3>
-    <form id="addCarForm" enctype="multipart/form-data">
-      <input type="text" id="carId" name="carId" placeholder="Mã xe" required><br>
-      <input type="text" id="name" name="name" placeholder="Tên dòng xe" required><br>
-      <input type="text" id="type" name="type" placeholder="Loại xe" required><br>
+    <h3>Thêm dòng đồng hồ mới</h3>
+    <form id="addClockForm" enctype="multipart/form-data">
+      <input type="text" id="clockId" name="clockId" placeholder="Mã đồng hồ" required><br>
+      <input type="text" id="name" name="name" placeholder="Tên dòng đồng hồ" required><br>
+      <input type="text" id="type" name="type" placeholder="Loại đồng hồ" required><br>
       <input type="number" id="price" name="price" placeholder="Giá" required><br>
       <input type="file" id="image" name="image" accept="image/*" required><br>
-      <button type="submit">Thêm xe</button>
+      <button type="submit">Thêm đồng hồ</button>
     </form>
   </div>
 
-  <!-- Danh sách xe -->
+  <!-- Danh sách đồng hồ -->
   <table>
     <thead>
       <tr>
-        <th>Mã xe</th>
-        <th>Tên dòng xe</th>
-        <th>Loại xe</th>
+        <th>Mã đồng hồ</th>
+        <th>Tên dòng đồng hồ</th>
+        <th>Loại đồng hồ</th>
         <th>Giá</th>
         <th>Hình ảnh</th>
         <th>Hành động</th>
       </tr>
     </thead>
     <tbody>
-      <% cars.forEach(car => { %>
+      <% Clocks.forEach(Clock => { %>
         <tr>
-          <td><%= car.carId %></td>
-          <td><%= car.name %></td>
-          <td><%= car.type %></td>
-          <td><%= car.price %></td>
-          <td><img src="<%= car.image %>" alt="<%= car.name %>"></td>
+          <td><%= Clock.clockId %></td>
+          <td><%= Clock.name %></td>
+          <td><%= Clock.type %></td>
+          <td><%= Clock.price %></td>
+          <td><img src="<%= Clock.image %>" alt="<%= Clock.name %>"></td>
           <td>
-            <button onclick="deleteCar('<%= car.carId %>')">Xóa</button>
+            <button onclick="deleteClock('<%= Clock.clockId %>')">Xóa</button>
           </td>
         </tr>
       <% }) %>
@@ -61,36 +61,36 @@
   </table>
 
   <script>
-    // Thêm xe
-    document.getElementById('addCarForm').addEventListener('submit', async (e) => {
+    // Thêm đồng hồ
+    document.getElementById('addClockForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData();
-      formData.append('carId', document.getElementById('carId').value);
+      formData.append('clockId', document.getElementById('clockId').value);
       formData.append('name', document.getElementById('name').value);
       formData.append('type', document.getElementById('type').value);
       formData.append('price', document.getElementById('price').value);
       formData.append('image', document.getElementById('image').files[0]);
 
-      const response = await fetch('/api/cars', {
+      const response = await fetch('/api/Clocks', {
         method: 'POST',
         body: formData,
       });
       const result = await response.json();
       if (response.ok) {
-        alert('Thêm xe thành công!');
+        alert('Thêm đồng hồ thành công!');
         window.location.reload();
       } else {
         alert('Lỗi: ' + result.error);
       }
     });
 
-    // Xóa xe
-    async function deleteCar(carId) {
-      if (confirm('Bạn có chắc muốn xóa xe này?')) {
-        const response = await fetch(`/api/cars/${carId}`, { method: 'DELETE' });
+    // Xóa đồng hồ
+    async function deleteClock(clockId) {
+      if (confirm('Bạn có chắc muốn xóa đồng hồ này?')) {
+        const response = await fetch(`/api/Clocks/${clockId}`, { method: 'DELETE' });
         const result = await response.json();
         if (response.ok) {
-          alert('Xóa xe thành công!');
+          alert('Xóa đồng hồ thành công!');
           window.location.reload();
         } else {
           alert('Lỗi: ' + result.error);
